@@ -1,37 +1,32 @@
 defmodule Day01 do
-  def read() do
-    {:ok, file} = File.read("input/day01.txt")
-    data = String.split(file, "\n", trim: true)
-    Enum.map(data, &String.to_integer/1)
-  end
+  import AdventOfCode2019
+
+  @input "day01"
 
   def fuel(input) do
-    trunc(input / 3) - 2
+    div(input, 3) - 2
   end
 
-  # part one solution
+  # part one
   def total_count() do
-    values = read()
-
-    Enum.map(values, fn value -> fuel(value) end)
-    |> Enum.sum()
+    total(&fuel/1)
   end
 
   def fuel_for_fuel(input, total) do
-    fuel = fuel(input)
-
-    if fuel <= 0 do
-      total
-    else
-      fuel_for_fuel(fuel, total + fuel)
+    case fuel(input) do
+      fuel when fuel <= 0 -> total
+      fuel -> fuel_for_fuel(fuel, total + fuel)
     end
   end
 
-  # part two solution
+  # part two
   def total_count2() do
-    values = read()
+    total(&fuel_for_fuel(&1, 0))
+  end
 
-    Enum.map(values, fn value -> fuel_for_fuel(value, 0) end)
+  def total(function) do
+    read_lines(@input)
+    |> Enum.map(function)
     |> Enum.sum()
   end
 end

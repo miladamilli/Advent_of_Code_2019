@@ -12,6 +12,14 @@ defmodule Day01Test do
   test "fuel for fuel" do
     assert Day01.fuel_for_fuel(12, 0) == 2
     assert Day01.fuel_for_fuel(1969, 0) == 966
-    assert Day01.fuel_for_fuel(100756, 0) == 50346
+    assert Day01.fuel_for_fuel(100_756, 0) == 50346
+  end
+
+  test "puzzle answer part 1" do
+    assert Day01.total_count() == 3_386_686
+  end
+
+  test "puzzle answer part 2" do
+    assert Day01.total_count2() == 5_077_155
   end
 end
