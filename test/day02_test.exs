@@ -12,7 +12,6 @@ defmodule Day02Test do
   end
 
   test "puzzle answer part 1" do
-
     assert Day02.part_one() == "3654868"
   end
 
