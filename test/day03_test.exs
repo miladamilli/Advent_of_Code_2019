@@ -33,4 +33,8 @@ defmodule Day03Test do
              "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
            ) == 410
   end
+
+  test "puzzle answer part 2" do
+    assert Day03.part_two_shortest_path() == 14358
+  end
 end
