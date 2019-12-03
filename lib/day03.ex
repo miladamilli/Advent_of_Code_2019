@@ -75,27 +75,32 @@ defmodule Day03 do
     wire1_path = find_wire_path(wire1)
     wire2_path = find_wire_path(wire2)
 
-    wire1_positions = Enum.map(wire1_path, fn {position, _count} -> position end)
-    wire2_positions = Enum.map(wire2_path, fn {position, _count} -> position end)
+    intersections = get_intersections(wire1_path, wire2_path)
 
-    intersections =
-      MapSet.intersection(MapSet.new(wire1_positions), MapSet.new(wire2_positions))
-      |> MapSet.to_list()
-
-    intersections = intersections -- [{0, 0}]
-
-    wire1 =
-      Enum.filter(wire1_path, fn {position, _count} -> position in intersections end)
-      |> Map.new()
-
-    wire2 =
-      Enum.filter(wire2_path, fn {position, _count} -> position in intersections end)
-      |> Map.new()
+    wire1 = filter_intersections(wire1_path, intersections)
+    wire2 = filter_intersections(wire2_path, intersections)
 
     {_position, distance} =
       Map.merge(wire1, wire2, fn _position, count1, count2 -> count1 + count2 end)
       |> Enum.min_by(fn {_pos, distance} -> distance end)
 
     IO.inspect(distance)
+  end
+
+  defp get_wire_positions(wire_path) do
+    Enum.map(wire_path, fn {position, _count} -> position end)
+  end
+
+  defp get_intersections(wire1, wire2) do
+    MapSet.intersection(
+      MapSet.new(get_wire_positions(wire1)),
+      MapSet.new(get_wire_positions(wire2))
+    )
+    |> MapSet.to_list()
+  end
+
+  defp filter_intersections(wire, intersections) do
+    Enum.filter(wire, fn {position, _count} -> position in intersections end)
+    |> Map.new()
   end
 end
