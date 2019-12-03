@@ -6,19 +6,14 @@ defmodule Day03 do
     String.split(file, "\n", trim: true)
   end
 
+  # part one
   def part_one_distance() do
     [wire1, wire2] = read_input()
-
-    calculate_distance(wire1, wire2)
+    find_closest_intersection(wire1, wire2)
   end
 
-  def calculate_distance(wire1, wire2) do
-    wire1 = String.split(wire1, ",", trim: true)
-
-    wire2 = String.split(wire2, ",", trim: true)
-    IO.inspect(wire1_path = wire_path(wire1) -- [{0, 0}])
-    IO.inspect(wire2_path = wire_path(wire2) -- [{0, 0}])
-    intersections = MapSet.intersection(MapSet.new(wire1_path), MapSet.new(wire2_path))
+  def find_closest_intersection(wire1, wire2) do
+    intersections = find_intersections(wire1, wire2) -- [{0, 0}]
 
     closest_intersection =
       Enum.map(intersections, fn {x, y} -> abs(x) + abs(y) end)
@@ -27,15 +22,22 @@ defmodule Day03 do
     IO.inspect(closest_intersection)
   end
 
-  def wire_path(steps, origin \\ {0, 0}, path \\ [])
-
-  def wire_path([], _, path) do
-    path
+  defp find_wire_path(wire) do
+    wire = String.split(wire, ",", trim: true)
+    wire_path(wire)
   end
 
-  def wire_path([step | remaining_steps], origin, path) do
-    IO.inspect(new_steps = next_step(step, origin))
-    wire_path(remaining_steps, Enum.at(new_steps, -1), path ++ new_steps)
+  def find_intersections(wire1, wire2) do
+    wire1 = find_wire_path(wire1)
+    wire2 = find_wire_path(wire2)
+
+    MapSet.intersection(MapSet.new(wire1), MapSet.new(wire2))
+    |> MapSet.to_list()
+  end
+
+  def wire_path(steps) do
+    Enum.scan(steps, [{0, 0}], fn step, origin -> next_step(step, Enum.at(origin, -1)) end)
+    |> List.flatten()
   end
 
   defp next_step(<<direction::utf8>> <> step, {x, y}) do
