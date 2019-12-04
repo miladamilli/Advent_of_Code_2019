@@ -1,15 +1,18 @@
 defmodule Day01 do
-  import AdventOfCode2019
-
   @input "day01"
+
+  # part one
+  def total_fuel() do
+    count_fuel(&fuel/1)
+  end
 
   def fuel(input) do
     div(input, 3) - 2
   end
 
-  # part one
-  def total_count() do
-    total(&fuel/1)
+  # part two
+  def total_fuel2() do
+    count_fuel(&fuel_for_fuel(&1, 0))
   end
 
   def fuel_for_fuel(input, total) do
@@ -19,13 +22,8 @@ defmodule Day01 do
     end
   end
 
-  # part two
-  def total_count2() do
-    total(&fuel_for_fuel(&1, 0))
-  end
-
-  def total(function) do
-    read_lines(@input)
+  defp count_fuel(function) do
+    ReadInput.lines(@input)
     |> Enum.map(function)
     |> Enum.sum()
   end
