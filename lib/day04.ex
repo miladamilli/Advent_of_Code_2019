@@ -23,17 +23,21 @@ defmodule Day04 do
 
   def check_passw2(passw) do
     passw = Integer.digits(passw)
-    check_increasing(passw) and check_number_group(passw)
+    check_increasing(passw) and check_number_group([-1] ++ passw ++ [-1])
   end
 
   defp check_increasing([a, b, c, d, e, f]) do
     a <= b and b <= c and c <= d and d <= e and e <= f
   end
 
-  defp check_number_group([a, a, c, _, _, _]) when a != c, do: true
-  defp check_number_group([a, b, b, c, _, _]) when b != a and b != c, do: true
-  defp check_number_group([_, b, c, c, d, _]) when c != b and c != d, do: true
-  defp check_number_group([_, _, c, d, d, e]) when d != c and d != e, do: true
-  defp check_number_group([_, _, _, d, e, e]) when e != d, do: true
-  defp check_number_group(_), do: false
+  defp check_number_group([a, b, c, d | _] = [_ | rest]) do
+    case b == c and b != a and b != d do
+      true -> true
+      _ -> check_number_group(rest)
+    end
+  end
+
+  defp check_number_group(_) do
+    false
+  end
 end
