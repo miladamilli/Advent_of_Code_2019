@@ -8,7 +8,7 @@ defmodule Day04Test do
     assert Day04.check_passw(123_789) == false
   end
 
-  test "puzzle answer part 1" do
+  test "part 1 answer" do
     assert Day04.part_one() == 2814
   end
 
@@ -18,7 +18,7 @@ defmodule Day04Test do
     assert Day04.check_passw2(111_122) == true
   end
 
-  test "puzzle answer part 2" do
+  test "part 2 answer" do
     assert Day04.part_two() == 1991
   end
 end
