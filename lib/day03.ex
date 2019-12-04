@@ -7,7 +7,7 @@ defmodule Day03 do
   end
 
   # part one
-  def part_one_distance() do
+  def shortest_distance() do
     [wire1, wire2] = read_input()
     find_closest_intersection(wire1, wire2)
   end
@@ -23,19 +23,14 @@ defmodule Day03 do
       |> Enum.map(fn {x, y} -> abs(x) + abs(y) end)
       |> Enum.min()
 
-    IO.inspect(closest_intersection)
+    closest_intersection
   end
 
   def find_intersections(wire1, wire2) do
-    wire1 = Enum.map(find_wire_path(wire1), fn {position, _count} -> position end)
-    wire2 = Enum.map(find_wire_path(wire2), fn {position, _count} -> position end)
+    wire1 = get_wire_path(wire1) |> get_wire_positions()
+    wire2 = get_wire_path(wire2) |> get_wire_positions()
 
     MapSet.intersection(MapSet.new(wire1), MapSet.new(wire2))
-  end
-
-  defp find_wire_path(wire) do
-    wire = String.split(wire, ",", trim: true)
-    wire_path(wire, {0, 0}, 0, [])
   end
 
   def wire_path([], _position, _count, path) do
@@ -59,21 +54,21 @@ defmodule Day03 do
     {path, position, count}
   end
 
-  defp move({x1, y1} = direction, steps, {x, y}, count, path) do
-    new_point = {x + x1, y + y1}
+  defp move({dx, dy} = direction, steps, {x, y}, count, path) do
+    new_point = {x + dx, y + dy}
     new_count = count + 1
     move(direction, steps - 1, new_point, new_count, [{new_point, new_count} | path])
   end
 
   # part two
-  def part_two_shortest_path() do
+  def shortest_path() do
     [wire1, wire2] = read_input()
     find_shortest_path(wire1, wire2)
   end
 
   def find_shortest_path(wire1, wire2) do
-    wire1_path = find_wire_path(wire1)
-    wire2_path = find_wire_path(wire2)
+    wire1_path = get_wire_path(wire1)
+    wire2_path = get_wire_path(wire2)
 
     intersections = get_intersections(wire1_path, wire2_path)
 
@@ -84,23 +79,26 @@ defmodule Day03 do
       Map.merge(wire1, wire2, fn _position, count1, count2 -> count1 + count2 end)
       |> Enum.min_by(fn {_pos, distance} -> distance end)
 
-    IO.inspect(distance)
+    distance
   end
 
-  defp get_wire_positions(wire_path) do
-    Enum.map(wire_path, fn {position, _count} -> position end)
+  defp get_wire_path(wire) do
+    wire = String.split(wire, ",", trim: true)
+    wire_path(wire, {0, 0}, 0, [])
   end
 
   defp get_intersections(wire1, wire2) do
-    MapSet.intersection(
-      MapSet.new(get_wire_positions(wire1)),
-      MapSet.new(get_wire_positions(wire2))
-    )
-    |> MapSet.to_list()
+    wire1 = MapSet.new(get_wire_positions(wire1))
+    wire2 = MapSet.new(get_wire_positions(wire2))
+    MapSet.intersection(wire1, wire2) |> MapSet.to_list()
   end
 
   defp filter_intersections(wire, intersections) do
     Enum.filter(wire, fn {position, _count} -> position in intersections end)
     |> Map.new()
+  end
+
+  defp get_wire_positions(wire) do
+    Enum.map(wire, fn {position, _count} -> position end)
   end
 end

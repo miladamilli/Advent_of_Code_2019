@@ -16,8 +16,8 @@ defmodule Day03Test do
            ) == 135
   end
 
-  test "puzzle answer part 1" do
-    assert Day03.part_one_distance() == 1519
+  test "part 1 answer" do
+    assert Day03.shortest_distance() == 1519
   end
 
   test "find shortest path" do
@@ -34,7 +34,7 @@ defmodule Day03Test do
            ) == 410
   end
 
-  test "puzzle answer part 2" do
-    assert Day03.part_two_shortest_path() == 14358
+  test "part 2 answer" do
+    assert Day03.shortest_path() == 14358
   end
 end
