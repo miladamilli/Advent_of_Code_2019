@@ -16,11 +16,11 @@ defmodule Day06Test do
   """
 
   test "count orbits" do
-    assert Day06.count(@part1) == 42
+    assert Day06.count_orbits(@part1) == 42
   end
 
   test "part 1 answer" do
-    assert Day06.count_orbits() == 122_782
+    assert Day06.number_of_orbits() == 122_782
   end
 
   @part2 """
@@ -44,6 +44,6 @@ defmodule Day06Test do
   end
 
   test "part 2 answer" do
-    assert Day06.path_to_santa() == 271
+    assert Day06.transfers_to_santa() == 271
   end
 end
