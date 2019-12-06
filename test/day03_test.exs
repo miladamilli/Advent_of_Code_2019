@@ -1,6 +1,5 @@
 defmodule Day03Test do
   use ExUnit.Case
-  doctest Day03
 
   test "find closest intersection" do
     assert Day03.find_closest_intersection("R8,U5,L5,D3", "U7,R6,D4,L4") == 6

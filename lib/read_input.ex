@@ -1,7 +1,6 @@
 defmodule ReadInput do
   def file(file) do
-    {:ok, file} = File.read("input/" <> file <> ".txt")
-    file
+    File.read!("input/" <> file <> ".txt")
   end
 
   def lines(file) do

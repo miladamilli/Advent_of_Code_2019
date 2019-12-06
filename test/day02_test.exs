@@ -1,6 +1,5 @@
 defmodule Day02Test do
   use ExUnit.Case
-  doctest Day02
 
   test "intcode program" do
     input1 = ReadInput.numbers("1,0,0,0,99")

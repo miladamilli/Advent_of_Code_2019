@@ -2,8 +2,7 @@ defmodule Day03 do
   @input "day03"
 
   def read_input() do
-    {:ok, file} = File.read("input/" <> @input <> ".txt")
-    String.split(file, "\n", trim: true)
+    File.read!("input/" <> @input <> ".txt") |> String.split("\n", trim: true)
   end
 
   # part one

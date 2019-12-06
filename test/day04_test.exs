@@ -1,6 +1,5 @@
 defmodule Day04Test do
   use ExUnit.Case
-  doctest Day03
 
   test "part one" do
     assert Day04.check_passw(111_111) == true
