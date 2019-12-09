@@ -1,146 +1,149 @@
 defmodule Day09 do
   @input_file "day09"
-  @phases1 [0, 1, 2, 3, 4]
-  @phases2 [5, 6, 7, 8, 9]
 
-  def largest_output1() do
-    do_largest_output(load_file(@input_file), generate_phases(@phases1))
+  def run() do
+    program = @input_file |> ReadInput.file() |> load_program()
+    computer = init_computer(program, 1)
+
+    run_program(computer).output
   end
 
-  def largest_output2() do
-    do_largest_output(load_file(@input_file), generate_phases(@phases2))
-  end
-
-  defp load_file(file) do
-    file |> ReadInput.file()
-  end
-
-  def do_largest_output(data, list_phases) do
-    program = load_program(data)
-
-    Enum.map(list_phases, &(start_comps(program, &1) |> run_comps(0)))
-    |> Enum.max()
-  end
-
-  defp run_comps([c1, c2, c3, c4, c5], input) do
-    %{output: output} = c1_new = run_program(%{c1 | input: c1.input ++ [input]})
-    %{output: output} = c2_new = run_program(%{c2 | input: c2.input ++ [output]})
-    %{output: output} = c3_new = run_program(%{c3 | input: c3.input ++ [output]})
-    %{output: output} = c4_new = run_program(%{c4 | input: c4.input ++ [output]})
-    %{output: output} = c5_new = run_program(%{c5 | input: c5.input ++ [output]})
-
-    cond do
-      c5_new.halt -> c5_new.output
-      true -> run_comps([c1_new, c2_new, c3_new, c4_new, c5_new], output)
-    end
-  end
-
-  defp start_comps(program, phases) do
-    Enum.map(phases, &init_computer(program, &1))
-  end
-
-  defp load_program(data) do
+  def load_program(data) do
     data
     |> ReadInput.numbers()
     |> Enum.with_index()
     |> Map.new(fn {v, k} -> {k, v} end)
   end
 
-  defp init_computer(program, input) do
-    %{program: program, position: 0, input: [input], output: nil, halt: false}
+  def init_computer(program, input) do
+    %{memory: program, position: 0, input: [input], output: nil, halt: false, relative_base: 0}
   end
 
-  def generate_phases([]), do: [[]]
-
-  def generate_phases(phases) do
-    for elem <- phases, rest <- generate_phases(phases -- [elem]) do
-      [elem | rest]
-    end
-  end
+  def run_program(%{halt: true} = computer), do: computer
 
   def run_program(computer) do
-    code = computer.program[computer.position]
-    code = Enum.take([0, 0, 0, 0] ++ Integer.digits(code), -5)
-    run_code(code, computer)
+    code = computer.memory[computer.position]
+    code = Enum.take([0, 0, 0] ++ Integer.digits(code), -4)
+    computer = run_instr(code, computer)
+    run_program(computer)
   end
 
-  def run_code([_, _, _, 9, 9], computer) do
-    %{computer | halt: true}
-  end
+  defp run_instr([_, _, 9, 9], computer), do: %{computer | halt: true}
+  defp run_instr([mode2, mode1, _, 1], computer), do: op(:add, mode1, mode2, computer)
+  defp run_instr([mode2, mode1, _, 2], computer), do: op(:multiply, mode1, mode2, computer)
+  defp run_instr([_, _, _, 3], computer), do: op(:input, computer)
+  defp run_instr([_, mode1, _, 4], computer), do: op(:output, mode1, computer)
+  defp run_instr([mode2, mode1, _, 5], computer), do: op(:nonzero, mode1, mode2, computer)
+  defp run_instr([mode2, mode1, _, 6], computer), do: op(:zero, mode1, mode2, computer)
+  defp run_instr([mode2, mode1, _, 7], computer), do: op(:less, mode1, mode2, computer)
+  defp run_instr([mode2, mode1, _, 8], computer), do: op(:equal, mode1, mode2, computer)
+  defp run_instr([_, mode1, _, 9], computer), do: op(:offset, mode1, computer)
 
-  def run_code([_, mode2, mode1, _, 1], %{program: program, position: position} = computer) do
-    value1 = address(mode1, position + 1, program)
-    value2 = address(mode2, position + 2, program)
-
-    program = %{program | program[position + 3] => value1 + value2}
-    run_program(update_computer(computer, program, position + 4))
-  end
-
-  def run_code([_, mode2, mode1, _, 2], %{program: program, position: position} = computer) do
-    value1 = address(mode1, position + 1, program)
-    value2 = address(mode2, position + 2, program)
-
-    program = %{program | program[position + 3] => value1 * value2}
-    run_program(update_computer(computer, program, position + 4))
-  end
-
-  def run_code([_, _, _, _, 3], %{program: program, position: position} = computer) do
+  defp op(:input, %{memory: memory, position: position} = computer) do
     if computer.input == [] do
       computer
     else
-      program = %{program | computer.program[position + 1] => hd(computer.input)}
+      memory = update_memory(memory, memory[position + 1], hd(computer.input))
       computer = %{computer | input: tl(computer.input)}
-      run_program(update_computer(computer, program, position + 2))
+      update_computer(computer, memory, position + 2)
     end
   end
 
-  def run_code([_, _, mode1, _, 4], %{program: program, position: position} = computer) do
-    output = address(mode1, position + 1, program)
+  defp op(:add, mode1, mode2, %{memory: memory, position: position} = computer) do
+    value1 = read(mode1, position + 1, computer)
+    value2 = read(mode2, position + 2, computer)
+    #  IO.inspect  value1 + value2
+    memory = update_memory(memory, memory[position + 3], value1 + value2)
+    update_computer(computer, memory, position + 4)
+  end
+
+  defp op(:multiply, mode1, mode2, %{memory: memory, position: position} = computer) do
+    value1 = read(mode1, position + 1, computer)
+    value2 = read(mode2, position + 2, computer)
+
+    # if program[position + 3] == 1000 do
+    #   IO.inspect  value2
+    # end
+    # IO.inspect  value1
+
+    memory = update_memory(memory, memory[position + 3], value1 * value2)
+    update_computer(computer, memory, position + 4)
+  end
+
+  defp op(:nonzero, mode1, mode2, %{memory: memory, position: position} = computer) do
+    if read(mode1, position + 1, computer) != 0 do
+      update_computer(
+        computer,
+        memory,
+        read(mode2, position + 2, computer)
+      )
+    else
+      update_computer(computer, memory, position + 3)
+    end
+  end
+
+  defp op(:zero, mode1, mode2, %{memory: memory, position: position} = computer) do
+    if read(mode1, position + 1, computer) == 0 do
+      update_computer(
+        computer,
+        memory,
+        read(mode2, position + 2, computer)
+      )
+    else
+      update_computer(computer, memory, position + 3)
+    end
+  end
+
+  defp op(:less, mode1, mode2, %{memory: memory, position: position} = computer) do
+    if read(mode1, position + 1, computer) < read(mode2, position + 2, computer) do
+      memory = update_memory(memory, memory[position + 3], 1)
+      update_computer(computer, memory, position + 4)
+    else
+      memory = update_memory(memory, memory[position + 3], 0)
+      update_computer(computer, memory, position + 4)
+    end
+  end
+
+  defp op(:equal, mode1, mode2, %{memory: memory, position: position} = computer) do
+    if read(mode1, position + 1, computer) == read(mode2, position + 2, computer) do
+      memory = update_memory(memory, memory[position + 3], 1)
+      update_computer(computer, memory, position + 4)
+    else
+      memory = update_memory(memory, memory[position + 3], 0)
+      update_computer(computer, memory, position + 4)
+    end
+  end
+
+  defp op(:output, mode1, %{memory: memory, position: position} = computer) do
+    output = read(mode1, position + 1, computer)
     computer = %{computer | output: output}
-    run_program(update_computer(computer, program, position + 2))
+    update_computer(computer, memory, position + 2)
   end
 
-  def run_code([_, mode2, mode1, _, 5], %{program: program, position: position} = computer) do
-    if address(mode1, position + 1, program) != 0 do
-      run_program(update_computer(computer, program, address(mode2, position + 2, program)))
-    else
-      run_program(update_computer(computer, program, position + 3))
-    end
+  defp op(:offset, mode1, %{position: position, relative_base: base} = computer) do
+    %{
+      computer
+      | relative_base: base + read(mode1, position + 1, computer),
+        position: position + 2
+    }
   end
 
-  def run_code([_, mode2, mode1, _, 6], %{program: program, position: position} = computer) do
-    if address(mode1, position + 1, program) == 0 do
-      run_program(update_computer(computer, program, address(mode2, position + 2, program)))
-    else
-      run_program(update_computer(computer, program, position + 3))
-    end
+  defp update_computer(computer, memory, position) do
+    %{computer | memory: memory, position: position}
   end
 
-  def run_code([_, mode2, mode1, _, 7], %{program: program, position: position} = computer) do
-    if address(mode1, position + 1, program) < address(mode2, position + 2, program) do
-      program = %{program | program[position + 3] => 1}
-      run_program(update_computer(computer, program, position + 4))
-    else
-      program = %{program | program[position + 3] => 0}
-      run_program(update_computer(computer, program, position + 4))
-    end
+  defp update_memory(memory, position, value) do
+    Map.put(memory, position, value)
   end
 
-  def run_code([_, mode2, mode1, _, 8], %{program: program, position: position} = computer) do
-    if address(mode1, position + 1, program) == address(mode2, position + 2, program) do
-      program = %{program | program[position + 3] => 1}
-      run_program(update_computer(computer, program, position + 4))
-    else
-      program = %{program | program[position + 3] => 0}
-      run_program(update_computer(computer, program, position + 4))
-    end
-  end
+  defp read(0, address, %{memory: memory}),
+    do: read_memory(memory[read_memory(memory[address])])
 
-  defp update_computer(computer, program, position) do
-    %{computer | program: program, position: position}
-  end
+  defp read(1, address, %{memory: memory}), do: read_memory(memory[address])
 
-  defp address(0, address, program), do: program[program[address]]
+  defp read(2, address, %{memory: memory, relative_base: relative_base}),
+    do: read_memory(memory[read_memory(memory[address]) + relative_base])
 
-  defp address(1, address, program), do: program[address]
+  defp read_memory(nil), do: 0
+  defp read_memory(value), do: value
 end
