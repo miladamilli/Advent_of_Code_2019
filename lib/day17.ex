@@ -14,28 +14,18 @@ defmodule Day17 do
   # original program
   # L,6,R,8,R,12,L,6,L,8,L,10,L,8,R,12,L,6,R,8,R,12,L,6,L,8,L,8,L,10,L,6,L,6,L,10,L,8,R,12,L,8,L,10,L,6,L,6,L,10,L,8,R,12,L,6,R,8,R,12,L,6,L,8,L,8,L,10,L,6,L,6,L,10,L,8,R,12
 
-  @main 'A,B,A,C,B,C,B,A,C,B'
-  @a 'L,6,R,8,R,12,L,6,L,8'
-  @b 'L,10,L,8,R,12'
-  @c 'L,8,L,10,L,6,L,6'
-  @yn 'n'
+  @routine 'A,B,A,C,B,C,B,A,C,B\n' ++
+             'L,6,R,8,R,12,L,6,L,8\n' ++
+             'L,10,L,8,R,12\n' ++
+             'L,8,L,10,L,6,L,6\n' ++
+             'n\n'
 
   def go_through_scaffold() do
     computer = start()
     computer = %{computer | memory: %{computer.memory | 0 => 2}}
-    routine = @main ++ [?\n] ++ @a ++ [?\n] ++ @b ++ [?\n] ++ @c ++ [?\n] ++ @yn ++ [?\n]
-    computer = go_robot(computer, routine)
-    hd(Enum.reverse(computer.output))
-  end
-
-  defp go_robot(computer, []) do
-    computer
-  end
-
-  defp go_robot(computer, [input | rest]) do
-    computer = Computer.run_computer(computer, input)
+    computer = Computer.run_computer(computer, @routine)
     show_camera(computer.output)
-    go_robot(computer, rest)
+    hd(Enum.reverse(computer.output))
   end
 
   defp find_intersections(map) do

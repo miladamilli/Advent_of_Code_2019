@@ -1,18 +1,13 @@
 defmodule Computer do
-  def read_file(file) do
-    ReadInput.file(file)
+  def run_computer(%{halt: true} = computer), do: computer
+  def run_computer(computer, input \\ [])
+
+  def run_computer(computer, input) when is_integer(input) do
+    run_computer(computer, [input])
   end
 
-  def run_computer(%{halt: true} = computer), do: computer
-
-  def run_computer(computer, input \\ []) do
-    input =
-      case input do
-        [] -> computer.input
-        input -> [input]
-      end
-
-    computer = %{computer | input: input}
+  def run_computer(computer, input) do
+    computer = %{computer | input: computer.input ++ input}
     code = computer.memory[computer.pc]
     code = Enum.take([0, 0, 0, 0] ++ Integer.digits(code), -5)
 
